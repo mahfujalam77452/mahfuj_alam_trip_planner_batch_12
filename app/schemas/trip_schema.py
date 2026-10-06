@@ -1,6 +1,7 @@
 from marshmallow import Schema,fields,validate
 
 class TripCreateSchema(Schema):
+    
     destination = fields.Str(
         required=True,
         validate=validate.Length(min=3,max=100)
@@ -23,14 +24,41 @@ class TripCreateSchema(Schema):
     )
 
 class TripResponseSchema(Schema):
+
     id = fields.Int()
+
     destination = fields.Str()
+
     start_date = fields.Date()
+
     end_date = fields.Date()
+
     budget = fields.Int()
+
     max_travelers = fields.Int()
+
     current_travelers=fields.Int()
+
     expenses=fields.Int()
+
     status = fields.Function(
         lambda obj: obj.status.value
+    )
+
+class TripUpdateSchema(Schema):
+
+    destination = fields.Str(
+        validate=validate.Length(min=3,max=100)
+    )
+
+    start_date = fields.Date()
+
+    end_date = fields.Date()
+
+    budget = fields.Integer(
+        validate=validate.Range(min=1)
+    )
+
+    max_travelers = fields.Integer(
+        validate=validate.Range(min=1)
     )
