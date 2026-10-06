@@ -71,3 +71,23 @@ def all_trips():
         "data":[response_schema.dump(trip) for trip in trips]
     },200
 
+def get_trip(id):
+
+    trip = get_trip_by_id(id)
+    response_schema = TripResponseSchema()
+
+    if trip is None:
+
+        return {
+            "error":"Trip not found",
+            "message":"This trip is not found"
+        },404
+
+    return {
+        "success":True,
+        "message":"Trip found successfully",
+        "data":response_schema.dump(trip)
+    }
+
+
+

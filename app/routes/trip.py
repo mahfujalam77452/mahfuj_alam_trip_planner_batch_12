@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.trip import create_a_trip,all_trips
+from app.controllers.trip import create_a_trip,all_trips,get_trip
 
 trip_bp = Blueprint("trip",__name__,url_prefix="/api/v1/trips")
 
@@ -16,7 +16,7 @@ def list_trip():
 
 @trip_bp.route("/<int:id>")
 def get_a_trip(id):
-    return "Get a trip"
+    return get_trip(id)
 
 
 
