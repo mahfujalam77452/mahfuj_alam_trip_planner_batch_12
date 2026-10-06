@@ -19,7 +19,7 @@ class TripCreateSchema(Schema):
     )
     max_travelers = fields.Integer(
         required=True,
-        validate=validate.range(min=1)
+        validate=validate.Range(min=1)
     )
 
 class TripResponseSchema(Schema):
