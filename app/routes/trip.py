@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.trip import create_a_trip
+from app.controllers.trip import create_a_trip,all_trips
 
 trip_bp = Blueprint("trip",__name__,url_prefix="/api/v1/trips")
 
@@ -10,7 +10,7 @@ def create_trip():
 
 @trip_bp.route("")
 def list_trip():
-    return "All trip"
+    return all_trips()
 
 
 

@@ -4,6 +4,7 @@ from app.extensions import db
 from app.schemas.trip_schema import TripCreateSchema,TripResponseSchema
 from marshmallow import ValidationError
 from app.validations.trip import is_date_range_valid
+from app.services.trip import get_trips,get_trip_by_id,delete_trip_by_id,update_trip_by_id
 
 def create_a_trip():
 
@@ -56,3 +57,17 @@ def create_a_trip():
         "message":"Trip created successfully",
         "data":response_schema.dump(trip)
     },201
+
+
+def all_trips():
+
+    trips = get_trips()
+    response_schema = TripResponseSchema()
+
+    return {
+        "count":len(trips),
+        "success":True,
+        "message":"Trips extracted successfully",
+        "data":[response_schema.dump(trip) for trip in trips]
+    },200
+
