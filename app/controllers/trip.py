@@ -89,7 +89,7 @@ def get_trip(id):
         "data":response_schema.dump(trip)
     },200
 
-    
+
 
 def update_trip(id):
 
@@ -127,7 +127,23 @@ def update_trip(id):
 
 
 def delete_trip(id):
-    return "deleted"
+
+    response_schema = TripResponseSchema()
+
+    trip = delete_trip_by_id(id)
+
+    if trip is None:
+
+        return {
+            "error":"Trip not found",
+            "message":"This trip is not found"
+        },404
+
+    return {
+        "success":True,
+        "message":"Trip deleted successfully",
+        "data":response_schema.dump(trip)
+    },200
 
 
 
