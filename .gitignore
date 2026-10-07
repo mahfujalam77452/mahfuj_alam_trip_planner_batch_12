@@ -1,4 +1,4 @@
 instance/
 .venv/
-_pycache_/
+__pycache__/
 .env

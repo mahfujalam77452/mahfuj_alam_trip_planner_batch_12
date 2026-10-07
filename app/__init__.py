@@ -15,7 +15,7 @@ def create_app():
     def helth_check():
         return{
         "success":True,
-        "message":"server helth is ok"
+        "status":"ok"
         },200
     
 
