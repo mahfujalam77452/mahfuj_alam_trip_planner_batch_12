@@ -8,7 +8,7 @@ from app.extensions import db
 from app.schemas.traveler_schema import TravelerCreateSchema
 from marshmallow import ValidationError
 from app.validations.traveler import is_trip_exist,is_traveler_already_exist,is_travel_seat_available,is_trip_date_range_overlap
-from app.services.traveler import register_traveler,get_traveler_trip_dates
+from app.services.traveler import register_traveler,get_traveler_trip_dates,delete_traveler_by_trip_and_traveler_id
 
 def add_traveler(id):
 
@@ -37,8 +37,8 @@ def add_traveler(id):
     name = validated_data["name"]
     email = validated_data["email"]
 
-    traveler_id = register_traveler(name,email)
-    
+    traveler = register_traveler(name,email)
+    traveler_id = traveler.id
     if is_traveler_already_exist(trip.id,traveler_id):
 
         return {
@@ -76,8 +76,25 @@ def add_traveler(id):
     
     return {
         "success":True,
-        "message":"you are added in this trip successfully !"
+        "message":"you are added in this trip successfully !",
+        "data":{"id":traveler.id,"name":traveler.name,"email":traveler.email}
     },201
 
 def delete_traveler(id,traveler_id):
-    return "traveler deleted"
+
+    travel = delete_traveler_by_trip_and_traveler_id(id,traveler_id)
+
+    if travel is None:
+
+        return {
+            "error":"Not found",
+            "message":"You are not in this trip "
+        },404
+
+    return {
+        "success":True,
+        "message":"You are removed from this trip successfully",
+        
+    },200
+
+    

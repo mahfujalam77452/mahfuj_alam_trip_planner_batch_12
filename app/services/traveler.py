@@ -10,7 +10,7 @@ def register_traveler(name,email):
     ).scalar_one_or_none()
 
     if traveler:
-        return traveler.id
+        return traveler
 
     traveler = Traveler(
         name = name,
@@ -20,7 +20,7 @@ def register_traveler(name,email):
     db.session.add(traveler)
     db.session.commit()
 
-    return traveler.id
+    return traveler
 
 def get_traveler_trip_dates(traveler_id,trip_id):
 
@@ -33,4 +33,22 @@ def get_traveler_trip_dates(traveler_id,trip_id):
     result = db.session.execute(stmt)
 
     return result.all()
+
+def delete_traveler_by_trip_and_traveler_id(trip_id,traveler_id):
+
+    stmp = db.select(Travel).where(Travel.trip_id == trip_id,
+                                   Travel.traveler_id == traveler_id)
+
+    result = db.session.execute(stmp)
+
+    data = result.scalar_one_or_none()
+
+    if data is None:
+        return None
+    
+    db.session.delete(data)
+    db.session.commit()
+
+    return data
+
 
