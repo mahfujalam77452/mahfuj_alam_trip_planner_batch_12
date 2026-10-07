@@ -38,7 +38,7 @@ def update_status(id):
 def expense(id):
     return add_expense(id)
 
-@trip_bp.route("/<int:id>summary")
+@trip_bp.route("/<int:id>/summary")
 def summary(id):
     return get_summary(id)
 

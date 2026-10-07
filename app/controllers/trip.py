@@ -201,6 +201,29 @@ def add_expense(id):
     },201
 
 def get_summary(id):
+
+    trip = get_trip_by_id(id)
+    
+    if trip is None:
+
+        return {
+            "error":"Trip not found",
+            "message":"This trip is not found"
+        },404
+
+    return {
+        "destination":trip.destination,
+        "date_of_trip":trip.start_date,
+        "current_travelers":trip.current_travelers,
+        "available_seats":trip.max_travelers - trip.current_travelers,
+        "total_expense":trip.expenses,
+        "reamaining_budget":trip.budget-trip.expenses
+
+
+    },200
+    
+    
+
     return "summery return"
 
 
