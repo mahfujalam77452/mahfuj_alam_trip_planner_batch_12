@@ -2,6 +2,7 @@ from app.models.traveler import Traveler
 from app.models.travel import Travel
 from app.models.trip import Trip
 from app.extensions import db
+from app.services.trip import get_trip_by_id
 
 def register_traveler(name,email):
 
@@ -35,6 +36,10 @@ def get_traveler_trip_dates(traveler_id,trip_id):
     return result.all()
 
 def delete_traveler_by_trip_and_traveler_id(trip_id,traveler_id):
+    trip = get_trip_by_id(trip_id)
+
+    if trip is None:
+        return None
 
     stmp = db.select(Travel).where(Travel.trip_id == trip_id,
                                    Travel.traveler_id == traveler_id)
@@ -47,6 +52,7 @@ def delete_traveler_by_trip_and_traveler_id(trip_id,traveler_id):
         return None
     
     db.session.delete(data)
+    trip.current_travelers = trip.current_travelers - 1
     db.session.commit()
 
     return data

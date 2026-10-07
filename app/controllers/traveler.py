@@ -72,7 +72,9 @@ def add_traveler(id):
     )
 
     db.session.add(travel)
+    trip.current_travelers = trip.current_travelers + 1
     db.session.commit()
+
     
     return {
         "success":True,

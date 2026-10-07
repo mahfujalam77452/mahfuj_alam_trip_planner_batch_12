@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.trip import create_a_trip,all_trips,get_trip,update_trip,delete_trip
+from app.controllers.trip import create_a_trip,all_trips,get_trip,update_trip,delete_trip,add_expense,get_summary
 
 trip_bp = Blueprint("trip",__name__,url_prefix="/api/v1/trips")
 

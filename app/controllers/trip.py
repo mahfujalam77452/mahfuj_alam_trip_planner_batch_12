@@ -1,9 +1,10 @@
 from flask import request,make_response
 from app.models.trip import Trip
+from app.models.expense import Expense
 from app.extensions import db
-from app.schemas.trip_schema import TripCreateSchema,TripResponseSchema,TripUpdateSchema
+from app.schemas.trip_schema import TripCreateSchema,TripResponseSchema,TripUpdateSchema,ExpenseAddSchema
 from marshmallow import ValidationError
-from app.validations.trip import is_date_range_valid
+from app.validations.trip import is_date_range_valid,is_expense_valid
 from app.services.trip import get_trips,get_trip_by_id,delete_trip_by_id,update_trip_by_id
 
 def create_a_trip():
@@ -146,7 +147,58 @@ def delete_trip(id):
     },200
 
 def add_expense(id):
-    return "expense added"
+
+    trip = get_trip_by_id(id)
+    
+    if trip is None:
+
+        return {
+            "error":"Trip not found",
+            "message":"This trip is not found"
+        },404
+
+    data = request.get_json()
+
+    schema = ExpenseAddSchema()
+
+
+    try:
+        validated_data = schema.load(data)
+    
+    except ValidationError as error:
+
+        return {
+            "error":"Invalid input",
+            "message":error.messages
+        },400
+
+    if not is_expense_valid(trip.budget,trip.expenses + validated_data["amount"]):
+        return {
+            "error":"Budget exceeding",
+            "message":"Your expense is exceeding the total budget"
+        },409
+
+    expense = Expense(
+        trip_id = id,
+        title = validated_data['title'],
+        amount = validated_data["amount"]
+    )
+
+    db.session.add(expense)
+    trip.expenses = trip.expenses + validated_data["amount"]
+    db.session.commit()
+
+
+    return {
+        "success":True,
+        "message":"expense added sucessfully",
+        "data":{
+            "id":expense.id,
+            "trip_id":expense.trip_id,
+            "title":expense.title,
+            "amount":expense.amount
+        }
+    },201
 
 def get_summary(id):
     return "summery return"
