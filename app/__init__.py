@@ -6,6 +6,7 @@ from flask import Flask
 from app.extensions import db
 from app.config import Config
 from app.routes.trip import trip_bp
+from app.routes.traveler import traveler_bp
 
 def create_app():
 
@@ -22,6 +23,7 @@ def create_app():
     app.config.from_object(Config)
 
     app.register_blueprint(trip_bp)
+    app.register_blueprint(traveler_bp)
 
     db.init_app(app)
 

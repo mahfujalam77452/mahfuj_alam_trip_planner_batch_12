@@ -62,3 +62,13 @@ class TripUpdateSchema(Schema):
     max_travelers = fields.Integer(
         validate=validate.Range(min=1)
     )
+
+class ExpenseAddSchema(Schema):
+    title = fields.Str(
+        required = True
+    )
+
+    amount = fields.Integer(
+        required = True,
+        validate = validate.Range(min=1)
+    )

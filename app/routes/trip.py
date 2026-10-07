@@ -34,5 +34,13 @@ def delete_a_trip(id):
 def update_status(id):
     return "trip created"
 
+@trip_bp.route("/<int:id>/expenses",methods=["POST"])
+def expense(id):
+    return add_expense(id)
+
+@trip_bp.route("/<int:id>summary")
+def summary(id):
+    return get_summary(id)
+
 
 

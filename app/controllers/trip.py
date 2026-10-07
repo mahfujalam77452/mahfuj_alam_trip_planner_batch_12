@@ -145,6 +145,12 @@ def delete_trip(id):
         "data":response_schema.dump(trip)
     },200
 
+def add_expense(id):
+    return "expense added"
+
+def get_summary(id):
+    return "summery return"
+
 
 
 
