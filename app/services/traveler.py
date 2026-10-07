@@ -6,7 +6,7 @@ from app.extensions import db
 def register_traveler(name,email):
 
     traveler = db.session.execute(
-        db.seclect(Traveler).where(Traveler.email == email)
+        db.select(Traveler).where(Traveler.email == email)
     ).scalar_one_or_none()
 
     if traveler:
@@ -22,12 +22,12 @@ def register_traveler(name,email):
 
     return traveler.id
 
-def get_traveler_trip_dates(travel_id):
+def get_traveler_trip_dates(traveler_id,trip_id):
 
     stmt = (
         db.select(Trip.start_date,Trip.end_date)
         .join(Travel,Travel.trip_id == Trip.id)
-        .where(Travel.traveler_id == traveler_id)
+        .where(Travel.traveler_id == traveler_id,Trip.id != trip_id)
     )
 
     result = db.session.execute(stmt)
