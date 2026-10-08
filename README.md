@@ -36,24 +36,59 @@ pip install -r requirements.txt
 cp .env.example .env
 python run.py
 ```
+### Run test case
 
+create a new bash terminal and run :
+
+```bash
+  python test.py
+```
 ## API Endpoints
 
-Base URL: `/api/v1`
+Health check:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/trips` | Create trip |
-| GET | `/trips` | List trips |
-| GET | `/trips/<id>` | Get trip |
-| PUT | `/trips/<id>` | Update trip |
-| DELETE | `/trips/<id>` | Delete trip |
+| GET | `/health` | Check whether the application is running |
 
-Health check: `GET /helth`
+Trip and related resources use the `/api/v1` base URL:
 
-## Example
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/v1/trips` | Create a trip |
+| GET | `/api/v1/trips` | List all trips |
+| GET | `/api/v1/trips/<id>` | Get one trip |
+| PUT | `/api/v1/trips/<id>` | Update a trip |
+| DELETE | `/api/v1/trips/<id>` | Delete a trip |
+| POST | `/api/v1/trips/<id>/travelers` | Add a traveler to a trip |
+| DELETE | `/api/v1/trips/<id>/travelers/<traveler_id>` | Remove a traveler from a trip |
+| POST | `/api/v1/trips/<id>/expenses` | Add an expense to a trip |
+| PATCH | `/api/v1/trips/<id>/status` | Change trip status |
+| GET | `/api/v1/trips/<id>/summary` | Get calculated trip summary |
+
+## Examples
+
+### Health Check
+
+```http
+GET /health
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "status": "ok"
+}
+```
 
 ### Create Trip
+
+```http
+POST /api/v1/trips
+Content-Type: application/json
+```
 
 ```json
 {
@@ -80,6 +115,116 @@ Response:
     "expenses": 0,
     "status": "PLANNED"
   }
+}
+```
+
+### Add Traveler
+
+```http
+POST /api/v1/trips/1/travelers
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Ayesha Rahman",
+  "email": "ayesha@example.com"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "you are added in this trip successfully !",
+  "data": {
+    "id": 1,
+    "name": "Ayesha Rahman",
+    "email": "ayesha@example.com"
+  }
+}
+```
+
+### Add Expense
+
+```http
+POST /api/v1/trips/1/expenses
+Content-Type: application/json
+```
+
+```json
+{
+  "title": "Hotel",
+  "amount": 12000
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "expense added sucessfully",
+  "data": {
+    "id": 1,
+    "trip_id": 1,
+    "title": "Hotel",
+    "amount": 12000
+  }
+}
+```
+
+### Change Trip Status
+
+```http
+PATCH /api/v1/trips/1/status
+Content-Type: application/json
+```
+
+```json
+{
+  "status": "ONGOING"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "status updated successfully"
+}
+```
+
+### Trip Summary
+
+```http
+GET /api/v1/trips/1/summary
+```
+
+Response:
+
+```json
+{
+  "destination": "Cox's Bazar",
+  "date_of_trip": "2026-11-10",
+  "traveler_count": 1,
+  "available_seats": 9,
+  "total_expense": 12000,
+  "remaining_budget": 38000
+}
+```
+
+### Error Response
+
+Invalid business operations return a non-2xx status. For example, adding an
+expense above the remaining budget returns `409 Conflict`:
+
+```json
+{
+  "error": "Conflict",
+  "message": "Your expense is exceeding the total budget"
 }
 ```
 
