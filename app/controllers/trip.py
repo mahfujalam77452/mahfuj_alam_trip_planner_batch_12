@@ -94,6 +94,23 @@ def get_trip(id):
 
 def update_trip(id):
 
+    trip = get_trip_by_id(id)
+
+    if trip is None:
+
+        return {
+            "error":"Trip not found",
+            "message":"This trip is not found"
+        },404
+
+    if trip.status == TripStatus.COMPLETED:
+        return {
+            "error":"Conflict",
+            "message":"can't edit a copleted trip"
+        },409
+
+    
+
     data = request.get_json()
 
     schema = TripUpdateSchema()
@@ -112,12 +129,7 @@ def update_trip(id):
     
     trip = update_trip_by_id(id,validated_data)
 
-    if trip is None:
-
-        return {
-            "error":"Trip not found",
-            "message":"This trip is not found"
-        },404
+    
 
     return {
         "success":True,
@@ -156,6 +168,12 @@ def add_expense(id):
             "error":"Trip not found",
             "message":"This trip is not found"
         },404
+
+    if trip.status != TripStatus.PLANNED or trip.status != TripStatus.ONGOING:
+        return {
+            "error":"Conflict",
+            "message":f"adding expense is not allowed for {trip.status.value.lower()} trip"
+        },409
 
     data = request.get_json()
 

@@ -38,12 +38,9 @@ def delete_trip_by_id(id):
 
     return data
 
-def update_trip_by_id(id,validated_data):
+def update_trip_by_id(trip,validated_data):
 
-    trip = get_trip_by_id(id)
-
-    if trip is None:
-        return None
+    
 
     for key,value in validated_data.items():
 
