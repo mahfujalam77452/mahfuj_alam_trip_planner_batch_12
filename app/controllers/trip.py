@@ -1,10 +1,10 @@
 from flask import request,make_response
-from app.models.trip import Trip
+from app.models.trip import Trip,TripStatus
 from app.models.expense import Expense
 from app.extensions import db
-from app.schemas.trip_schema import TripCreateSchema,TripResponseSchema,TripUpdateSchema,ExpenseAddSchema
+from app.schemas.trip_schema import TripCreateSchema,TripResponseSchema,TripUpdateSchema,ExpenseAddSchema,StatusChangeSchema
 from marshmallow import ValidationError
-from app.validations.trip import is_date_range_valid,is_expense_valid
+from app.validations.trip import is_date_range_valid,is_expense_valid,is_valid_state_change
 from app.services.trip import get_trips,get_trip_by_id,delete_trip_by_id,update_trip_by_id
 
 def create_a_trip():
@@ -224,7 +224,53 @@ def get_summary(id):
     
     
 
-    return "summery return"
+    
+
+def change_status(id):
+
+    trip = get_trip_by_id(id)
+    
+    if trip is None:
+
+        return {
+            "error":"Trip not found",
+            "message":"This trip is not found"
+        },404
+
+    data = request.get_json()
+
+    schema = StatusChangeSchema()
+
+
+    try:
+        validated_data = schema.load(data)
+    
+    except ValidationError as error:
+
+        return {
+            "error":"Invalid input",
+            "message":error.messages
+        },400
+
+    proposed_status = TripStatus(validated_data["status"])
+
+    if not is_valid_state_change(trip.status,proposed_status):
+
+        return {
+            "error":"Invalid Status",
+            "message":f"Status can't be changed form {trip.status.value} to {proposed_status.value}"
+        },409
+
+    trip.status = proposed_status
+    db.session.commit()
+
+    return {
+        "success":True,
+        "message":"status updated successfully"
+    },200
+
+
+    
 
 
 

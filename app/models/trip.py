@@ -4,7 +4,7 @@ from enum import Enum
 
 class TripStatus(Enum):
     PLANNED = "PLANNED"
-    OPEN = "OPEN"
+    CENCELLED = "CENCELLED"
     ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"
 

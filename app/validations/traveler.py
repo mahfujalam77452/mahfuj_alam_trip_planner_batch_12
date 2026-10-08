@@ -31,7 +31,7 @@ def is_trip_date_range_overlap(trip_date,exist_dates):
 
     for date in exist_dates:
 
-        if date.end_date > trip_date["start_date"] and date.start_date < trip_date["end_date"]:
+        if date.end_date >= trip_date["start_date"] and date.start_date <= trip_date["end_date"]:
             return True
         
     return False

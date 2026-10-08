@@ -1,5 +1,5 @@
 from marshmallow import Schema,fields,validate
-
+from app.models.trip import TripStatus
 class TripCreateSchema(Schema):
     
     destination = fields.Str(
@@ -71,4 +71,13 @@ class ExpenseAddSchema(Schema):
     amount = fields.Integer(
         required = True,
         validate = validate.Range(min=1)
+    )
+
+class StatusChangeSchema(Schema):
+
+    status=fields.Str(
+        required = True,
+        validate=validate.OneOf(
+            [status.value for status in TripStatus]
+        )
     )

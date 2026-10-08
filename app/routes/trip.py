@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.trip import create_a_trip,all_trips,get_trip,update_trip,delete_trip,add_expense,get_summary
+from app.controllers.trip import create_a_trip,all_trips,get_trip,update_trip,delete_trip,add_expense,get_summary,change_status
 
 trip_bp = Blueprint("trip",__name__,url_prefix="/api/v1/trips")
 
@@ -30,9 +30,9 @@ def delete_a_trip(id):
     return delete_trip(id)
 
 
-@trip_bp.route("/<int:id>/status",methods=["POST"])
+@trip_bp.route("/<int:id>/status",methods=["PATCH"])
 def update_status(id):
-    return "trip created"
+    return change_status(id)
 
 @trip_bp.route("/<int:id>/expenses",methods=["POST"])
 def expense(id):

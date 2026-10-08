@@ -1,5 +1,13 @@
-from app.models.trip import Trip
+from app.models.trip import Trip,TripStatus
 from app.extensions import db
+
+next_status = {
+    TripStatus.PLANNED:[TripStatus.ONGOING,TripStatus.CENCELLED],
+    TripStatus.ONGOING:[TripStatus.COMPLETED,TripStatus.CENCELLED],
+}
+
+def is_valid_state_change(current_status,new_status):
+    return new_status in next_status.get(current_status,[])
 
 def is_date_range_valid(start_date,end_date):
 
