@@ -1,6 +1,6 @@
 from flask import request,make_response
 
-from app.models.trip import Trip
+from app.models.trip import Trip,TripStatus
 from app.models.travel import Travel
 from app.models.traveler import Traveler
 
@@ -20,6 +20,14 @@ def add_traveler(id):
             "message":"This Trip is not fount in the trip lists"
         },404
 
+    
+    if trip.status != TripStatus.PLANNED:
+        return {
+            "error":"Conflict",
+            "message":f"This Trip is {trip.status.value}"
+        },409
+
+
     data = request.get_json()
     schema = TravelerCreateSchema()
 
@@ -38,7 +46,15 @@ def add_traveler(id):
     email = validated_data["email"]
 
     traveler = register_traveler(name,email)
+
+    if traveler.name != name:
+        return {
+            "error":"Email already registered",
+            "message":"This email is already registered with another name"
+        },409
+
     traveler_id = traveler.id
+    
     if is_traveler_already_exist(trip.id,traveler_id):
 
         return {
