@@ -246,9 +246,7 @@ expense above the remaining budget returns `409 Conflict`:
    conflict.
 2. An admin may create the same trip multiple times because the same
    destination and date range may be conducted by different guides.
-3. When modifying a trip's date range, the admin is responsible for manually
-   confirming that the new dates do not overlap with any other trip of its
-   travelers.
+
 
 ## Project Structure
 
