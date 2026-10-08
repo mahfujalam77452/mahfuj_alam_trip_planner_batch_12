@@ -14,7 +14,11 @@ from sqlalchemy.exc import  SQLAlchemyError
 #########################################################################################
 def create_a_trip():
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    # handling {} request body
+    if not data:
+        raise BadRequest("request body missing")
 
     schema = TripCreateSchema()
 
@@ -35,7 +39,7 @@ def create_a_trip():
 
     if not is_date_range_valid(start_date,end_date):
 
-        raise BadReauest("start date should be the same date or previous date of end date")
+        raise BadRequest("start date should be the same date or previous date of end date")
 
         
     
@@ -118,14 +122,17 @@ def update_trip(id):
 
         
 
-    if trip.status == TripStatus.COMPLETED:
+    if trip.status == TripStatus.COMPLETED or trip.status == TripStatus.CANCELLED:
 
-        raise Conflict("can't edit a completed trip")
+        raise Conflict(f"can't edit a {trip.status} trip")
         
 
     
 
     data = request.get_json()
+    # handling {} request body
+    if not data:
+        raise BadRequest("request body missing")
 
     schema = TripUpdateSchema()
 
@@ -140,7 +147,7 @@ def update_trip(id):
 
         
     
-    trip = update_trip_by_id(id,validated_data)
+    trip = update_trip_by_id(trip,validated_data)
 
     
 
@@ -187,7 +194,10 @@ def add_expense(id):
         raise Conflict(f"adding expense is not allowed for {trip.status.value.lower()} trip")
         
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    # handling {} request body
+    if not data:
+        raise BadRequest("request body missing")
 
     schema = ExpenseAddSchema()
 
@@ -199,7 +209,7 @@ def add_expense(id):
         raise BadRequest(error.messages)
 
         
-    # is current expense will exeed the trip budget
+    # is current expense will exeeded the total budget
     if not is_expense_valid(trip.budget,trip.expenses + validated_data["amount"]):
         raise Conflict("Your expense is exceeding the total budget")
         
@@ -248,10 +258,10 @@ def get_summary(id):
     return {
         "destination":trip.destination,
         "date_of_trip":trip.start_date,
-        "current_travelers":trip.current_travelers,
+        "traveler_count":trip.current_travelers,
         "available_seats":trip.max_travelers - trip.current_travelers,
         "total_expense":trip.expenses,
-        "reamaining_budget":trip.budget-trip.expenses
+        "remaining_budget":trip.budget-trip.expenses
 
 
     },200
@@ -270,7 +280,11 @@ def change_status(id):
 
         raise NotFound("This trip is not found in the trip list")
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    # handling {} request body
+    if not data:
+        raise BadRequest("request body missing")
 
     schema = StatusChangeSchema()
 

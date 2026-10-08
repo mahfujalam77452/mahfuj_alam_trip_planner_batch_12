@@ -15,7 +15,7 @@ def create_app():
 
     # Helth Check route
 
-    @app.route("/helth")
+    @app.route("/health")
     def helth_check():
         return{
         "success":True,

@@ -5,7 +5,7 @@ from enum import Enum
 #Allowed Status for a Trip
 class TripStatus(Enum):
     PLANNED = "PLANNED"
-    CENCELLED = "CENCELLED"
+    CANCELLED = "CANCELLED"
     ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"
 
@@ -66,7 +66,7 @@ class Trip(db.Model):
             name="check_trip_budget_positive"
         ),
         CheckConstraint(
-            "start_date <= end_date",
+            "start_date < end_date",
             name="check_trip_date_range"
         )
     )

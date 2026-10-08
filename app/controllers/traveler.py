@@ -33,7 +33,12 @@ def add_traveler(id):
         
 
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    # handling {} request body
+    if not data:
+        raise BadRequest("request body missing")
+
     schema = TravelerCreateSchema()
 
     try:
@@ -73,7 +78,7 @@ def add_traveler(id):
     } 
     
     # Get traveler other trips date
-    
+
     exist_dates = get_traveler_trip_dates(traveler_id,trip.id)
 
     if is_trip_date_range_overlap(trip_date,exist_dates):
@@ -113,6 +118,15 @@ def add_traveler(id):
 
 
 def delete_traveler(id,traveler_id):
+    
+    trip = is_trip_exist(id)
+
+    if trip is None:
+
+        raise NotFound("This trip is not found in the trip list")
+
+    if trip.status != TripStatus.PLANNED:
+        raise Conflict(f"This Trip is {trip.status.value}")
 
     travel = delete_traveler_by_trip_and_traveler_id(id,traveler_id)
 

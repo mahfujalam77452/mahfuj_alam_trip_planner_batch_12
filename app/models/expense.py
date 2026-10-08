@@ -29,13 +29,15 @@ class Expense(db.Model):
         nullable=False
     )
 
-# expense amount should be greater then 0
-__table_args__ = (
+    # expense amount should be greater then 0
+    __table_args__ = (
         CheckConstraint(
             "amount > 0",
             name="check_expense_amount_positive"
         ),
         
     )
+
+
 
 

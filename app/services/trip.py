@@ -1,5 +1,7 @@
 from app.models.trip import Trip
 from app.extensions import db
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import BadRequest,InternalServerError
 
 #########################################################################################
 # Get all trips 
@@ -65,6 +67,35 @@ def delete_trip_by_id(id):
 def update_trip_by_id(trip,validated_data):
 
     
+    start_date = validated_data.get("start_date",trip.start_date)
+    end_date = validated_data.get("end_date",trip.end_date)
+
+    if end_date <= start_date :
+
+        raise BadRequest("End date can't before start date")
+    
+
+
+    budget = validated_data.get("budget",trip.budget)
+    expenses = trip.expenses
+
+    
+
+    if budget < expenses :
+
+        raise BadRequest("budget can't be less then the expenses")
+
+    
+    max_travelers = validated_data.get("max_travelers",trip.max_travelers)
+    current_travelers = trip.current_travelers
+
+    
+
+    if max_travelers < current_travelers :
+
+        raise BadRequest("max_travelers can't be less then the current travelers")
+
+
 
     for key,value in validated_data.items():
 

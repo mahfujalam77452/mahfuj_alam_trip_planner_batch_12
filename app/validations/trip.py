@@ -2,8 +2,8 @@ from app.models.trip import Trip,TripStatus
 from app.extensions import db
 
 next_status = {
-    TripStatus.PLANNED:[TripStatus.ONGOING,TripStatus.CENCELLED],
-    TripStatus.ONGOING:[TripStatus.COMPLETED,TripStatus.CENCELLED],
+    TripStatus.PLANNED:[TripStatus.ONGOING,TripStatus.CANCELLED],
+    TripStatus.ONGOING:[TripStatus.COMPLETED,TripStatus.CANCELLED],
 }
 #########################################################################################
 # State change validation
@@ -18,7 +18,7 @@ def is_valid_state_change(current_status,new_status):
 
 def is_date_range_valid(start_date,end_date):
 
-    return start_date <= end_date
+    return start_date < end_date
 
 #########################################################################################
 # Expense validation

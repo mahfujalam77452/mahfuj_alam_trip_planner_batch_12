@@ -4,6 +4,7 @@ from app.models.trip import Trip
 from app.extensions import db
 from app.services.trip import get_trip_by_id
 from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import BadRequest,InternalServerError
 
 #########################################################################################
 # Add name and email in Traveler table and Return the traveler if this email is not exist
