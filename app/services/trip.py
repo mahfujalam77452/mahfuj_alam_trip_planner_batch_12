@@ -1,6 +1,10 @@
 from app.models.trip import Trip
 from app.extensions import db
 
+#########################################################################################
+# Get all trips 
+#########################################################################################
+
 def get_trips():
 
     stmp = db.select(Trip)
@@ -11,6 +15,9 @@ def get_trips():
     
     return data
 
+#########################################################################################
+# Get a trip by id
+#########################################################################################
 
 def get_trip_by_id(id):
     
@@ -23,14 +30,13 @@ def get_trip_by_id(id):
 
     return data
 
+#########################################################################################
+# Delete a Trip by id
+#########################################################################################
+
 def delete_trip_by_id(id):
 
-    try:
-
-    except SQLAlchemyError:
-        db.session.rollback()
-        raise InternalServerError("Database error occurred.")
-
+    
     stmp = db.select(Trip).where(Trip.id == id)
 
     result = db.session.execute(stmp)
@@ -51,6 +57,10 @@ def delete_trip_by_id(id):
     
 
     return data
+
+#########################################################################################
+# Update a trip by id
+#########################################################################################
 
 def update_trip_by_id(trip,validated_data):
 

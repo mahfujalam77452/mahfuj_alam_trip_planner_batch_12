@@ -2,11 +2,17 @@ from app.extensions import db
 from app.models.travel import Travel
 from app.services.trip import get_trip_by_id
 
+#########################################################################################
+# Is trip exist
+#########################################################################################
+
 def is_trip_exist(id):
 
     return get_trip_by_id(id)
 
-
+#########################################################################################
+# Traveler already exist in a trip or not
+#########################################################################################
 
 def is_traveler_already_exist(id,traveler_id):
 
@@ -22,10 +28,17 @@ def is_traveler_already_exist(id,traveler_id):
     
     return False
 
+#########################################################################################
+# Travel seat available validation
+#########################################################################################
+
 def is_travel_seat_available(trip):
 
     return (trip.current_travelers + 1) <= trip.max_travelers
 
+#########################################################################################
+# Trip's date range overlap validation for a traveler
+#########################################################################################
 
 def is_trip_date_range_overlap(trip_date,exist_dates):
 

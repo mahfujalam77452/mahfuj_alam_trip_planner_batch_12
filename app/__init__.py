@@ -13,6 +13,8 @@ def create_app():
 
     app = Flask(__name__)
 
+    # Helth Check route
+
     @app.route("/helth")
     def helth_check():
         return{
@@ -27,6 +29,8 @@ def create_app():
     app.register_blueprint(traveler_bp)
 
     db.init_app(app)
+
+    # Global Error Handler
 
     @app.errorhandler(HTTPException)
     def handle_http_error(error):

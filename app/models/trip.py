@@ -2,6 +2,7 @@ from app.extensions import db
 from sqlalchemy import CheckConstraint
 from enum import Enum
 
+#Allowed Status for a Trip
 class TripStatus(Enum):
     PLANNED = "PLANNED"
     CENCELLED = "CENCELLED"

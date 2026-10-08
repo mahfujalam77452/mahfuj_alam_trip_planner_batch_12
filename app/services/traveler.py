@@ -5,10 +5,12 @@ from app.extensions import db
 from app.services.trip import get_trip_by_id
 from sqlalchemy.exc import SQLAlchemyError
 
+#########################################################################################
+# Add name and email in Traveler table and Return the traveler if this email is not exist
+# Just return the Traveler if already exist
+#########################################################################################
 
 def register_traveler(name,email):
-
-    
 
     traveler = db.session.execute(
         db.select(Traveler).where(Traveler.email == email)
@@ -34,10 +36,13 @@ def register_traveler(name,email):
 
     return traveler
 
+#########################################################################################
+#Get all the trip dates the traveler in, expect the new trip where he want to travel
+#########################################################################################
+
 def get_traveler_trip_dates(traveler_id,trip_id):
 
     
-
     stmt = (
         db.select(Trip.start_date,Trip.end_date)
         .join(Travel,Travel.trip_id == Trip.id)
@@ -47,6 +52,10 @@ def get_traveler_trip_dates(traveler_id,trip_id):
     result = db.session.execute(stmt)
 
     return result.all()
+
+#########################################################################################
+# Delete Traveler by trip and traveler id
+#########################################################################################
 
 def delete_traveler_by_trip_and_traveler_id(trip_id,traveler_id):
 

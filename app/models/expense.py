@@ -29,6 +29,7 @@ class Expense(db.Model):
         nullable=False
     )
 
+# expense amount should be greater then 0
 __table_args__ = (
         CheckConstraint(
             "amount > 0",
@@ -37,20 +38,4 @@ __table_args__ = (
         
     )
 
-@event.listens_for(Expense.__table__,"after_create")
 
-def create_expense_trigger(target,connection,**kwargs):
-    connection.execute(
-        text(
-            """
-            CREATE TRIGGER after_expense_insert
-            AFTER INSERT ON expense
-            FOR EACH ROW
-            BEGIN
-               UPDATE trip
-               SET expenses = expenses + NEW.amount
-               WHERE id = NEW.trip_id;
-            END
-            """
-        )
-    )

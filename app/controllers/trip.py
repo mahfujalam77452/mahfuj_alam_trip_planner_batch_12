@@ -9,6 +9,9 @@ from app.services.trip import get_trips,get_trip_by_id,delete_trip_by_id,update_
 from werkzeug.exceptions import NotFound,BadRequest,Conflict,InternalServerError
 from sqlalchemy.exc import  SQLAlchemyError
 
+#########################################################################################
+# Create a Trip
+#########################################################################################
 def create_a_trip():
 
     data = request.get_json()
@@ -27,6 +30,8 @@ def create_a_trip():
     
     start_date = validated_data["start_date"]
     end_date = validated_data["end_date"]
+
+    # start date should before/same day of end date 
 
     if not is_date_range_valid(start_date,end_date):
 
@@ -63,6 +68,9 @@ def create_a_trip():
         "data":response_schema.dump(trip)
     },201
 
+#########################################################################################
+# All Trips
+#########################################################################################
 
 def all_trips():
 
@@ -75,6 +83,10 @@ def all_trips():
         "message":"Trips extracted successfully",
         "data":[response_schema.dump(trip) for trip in trips]
     },200
+
+#########################################################################################
+# Get a trip by ID
+#########################################################################################
 
 def get_trip(id):
 
@@ -92,7 +104,9 @@ def get_trip(id):
         "data":response_schema.dump(trip)
     },200
 
-
+#########################################################################################
+# Update a trip by id
+#########################################################################################
 
 def update_trip(id):
 
@@ -136,7 +150,9 @@ def update_trip(id):
         "data":response_schema.dump(trip)
     },200
 
-
+#########################################################################################
+# Delete a trip by id
+#########################################################################################
 
 def delete_trip(id):
 
@@ -154,6 +170,10 @@ def delete_trip(id):
         "data":response_schema.dump(trip)
     },200
 
+#########################################################################################
+# Add Expense to a trip
+#########################################################################################
+
 def add_expense(id):
 
     trip = get_trip_by_id(id)
@@ -162,7 +182,8 @@ def add_expense(id):
 
         raise NotFound("This trip is not found in the trip list")
 
-    if trip.status != TripStatus.PLANNED or trip.status != TripStatus.ONGOING:
+    # adding expenses only allowed for planned and ongoing trip
+    if trip.status != TripStatus.PLANNED and trip.status != TripStatus.ONGOING:
         raise Conflict(f"adding expense is not allowed for {trip.status.value.lower()} trip")
         
 
@@ -178,7 +199,7 @@ def add_expense(id):
         raise BadRequest(error.messages)
 
         
-
+    # is current expense will exeed the trip budget
     if not is_expense_valid(trip.budget,trip.expenses + validated_data["amount"]):
         raise Conflict("Your expense is exceeding the total budget")
         
@@ -212,6 +233,10 @@ def add_expense(id):
         }
     },201
 
+#########################################################################################
+# Get summary of a trip
+#########################################################################################
+
 def get_summary(id):
 
     trip = get_trip_by_id(id)
@@ -233,7 +258,9 @@ def get_summary(id):
     
     
 
-    
+#########################################################################################
+# Change a trip's Status
+#########################################################################################
 
 def change_status(id):
 

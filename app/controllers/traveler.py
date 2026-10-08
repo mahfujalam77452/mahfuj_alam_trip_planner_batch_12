@@ -12,6 +12,12 @@ from app.services.traveler import register_traveler,get_traveler_trip_dates,dele
 from werkzeug.exceptions import NotFound,BadRequest,Conflict,InternalServerError
 from sqlalchemy.exc import  SQLAlchemyError
 
+
+
+#########################################################################################
+# Add Traveler for a Trip
+#########################################################################################
+
 def add_traveler(id):
 
     trip = is_trip_exist(id)
@@ -20,7 +26,8 @@ def add_traveler(id):
 
         raise NotFound("This trip is not found in the trip list")
 
-    
+    # Traveler should only added into the planned trip
+
     if trip.status != TripStatus.PLANNED:
         raise Conflict(f"This Trip is {trip.status.value}")
         
@@ -40,7 +47,11 @@ def add_traveler(id):
     name = validated_data["name"]
     email = validated_data["email"]
 
+    # Register this traveler if not exist in Taveler table
+
     traveler = register_traveler(name,email)
+
+    # Name against Email integrity
 
     if traveler.name != name:
         raise Conflict("This email is already registered with another name")
@@ -61,6 +72,8 @@ def add_traveler(id):
         "end_date":trip.end_date
     } 
     
+    # Get traveler other trips date
+    
     exist_dates = get_traveler_trip_dates(traveler_id,trip.id)
 
     if is_trip_date_range_overlap(trip_date,exist_dates):
@@ -72,6 +85,10 @@ def add_traveler(id):
         trip_id = trip.id,
         traveler_id = traveler_id
     )
+    
+    # Increse the the current travelers by 1 of this trip after adding traveler 
+    # Transection concept added for for data consistancy
+
     try:
         db.session.add(travel)
         trip.current_travelers = trip.current_travelers + 1
@@ -88,6 +105,12 @@ def add_traveler(id):
         "message":"you are added in this trip successfully !",
         "data":{"id":traveler.id,"name":traveler.name,"email":traveler.email}
     },201
+
+
+#########################################################################################
+# Delete Traveler from a trip
+#########################################################################################
+
 
 def delete_traveler(id,traveler_id):
 
