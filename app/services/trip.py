@@ -2,7 +2,8 @@ from app.models.trip import Trip
 from app.extensions import db
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import BadRequest,InternalServerError
-
+from app.models.travel import Travel
+from app.models.traveler import Traveler
 #########################################################################################
 # Get all trips 
 #########################################################################################
@@ -96,7 +97,28 @@ def update_trip_by_id(trip,validated_data):
         raise BadRequest("max_travelers can't be less then the current travelers")
 
 
+    #Check whether the new dates overlap
+    #with another trip of any current traveler.
 
+    overlapping_trip = db.session.execute(
+        db.select(Trip)
+        .join(
+            Travel,
+            Travel.trip_id==Trip.id
+        )
+        .where(
+            Travel.traveler_id.in_(
+                db.select(Travel.traveler_id)
+                .where(Travel.trip_id == trip.id)
+            ),
+            Trip.id != trip.id,
+            Trip.start_date < end_date,
+            Trip.end_date > start_date
+        )
+    ).scalars().first()
+
+    if overlapping_trip:
+        raise BadRequest("The new date range overlaps with another trip of other travelers")
     for key,value in validated_data.items():
 
         setattr(trip,key,value)
