@@ -3,8 +3,12 @@ from app.models.travel import Travel
 from app.models.trip import Trip
 from app.extensions import db
 from app.services.trip import get_trip_by_id
+from sqlalchemy.exc import SQLAlchemyError
+
 
 def register_traveler(name,email):
+
+    
 
     traveler = db.session.execute(
         db.select(Traveler).where(Traveler.email == email)
@@ -18,12 +22,21 @@ def register_traveler(name,email):
         email = email
     )
 
-    db.session.add(traveler)
-    db.session.commit()
+    try:
+        db.session.add(traveler)
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
+
+    
 
     return traveler
 
 def get_traveler_trip_dates(traveler_id,trip_id):
+
+    
 
     stmt = (
         db.select(Trip.start_date,Trip.end_date)
@@ -36,10 +49,13 @@ def get_traveler_trip_dates(traveler_id,trip_id):
     return result.all()
 
 def delete_traveler_by_trip_and_traveler_id(trip_id,traveler_id):
+
     trip = get_trip_by_id(trip_id)
 
     if trip is None:
         return None
+    
+    
 
     stmp = db.select(Travel).where(Travel.trip_id == trip_id,
                                    Travel.traveler_id == traveler_id)
@@ -50,10 +66,17 @@ def delete_traveler_by_trip_and_traveler_id(trip_id,traveler_id):
 
     if data is None:
         return None
+
+    try:
+        db.session.delete(data)
+        trip.current_travelers = trip.current_travelers - 1
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
     
-    db.session.delete(data)
-    trip.current_travelers = trip.current_travelers - 1
-    db.session.commit()
+    
 
     return data
 

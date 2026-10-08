@@ -13,6 +13,7 @@ def get_trips():
 
 
 def get_trip_by_id(id):
+    
 
     stmp = db.select(Trip).where(Trip.id == id)
 
@@ -24,6 +25,12 @@ def get_trip_by_id(id):
 
 def delete_trip_by_id(id):
 
+    try:
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
+
     stmp = db.select(Trip).where(Trip.id == id)
 
     result = db.session.execute(stmp)
@@ -33,8 +40,15 @@ def delete_trip_by_id(id):
     if data is None:
         return None
     
-    db.session.delete(data)
-    db.session.commit()
+    try:
+        db.session.delete(data)
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
+    
+    
 
     return data
 
@@ -45,8 +59,13 @@ def update_trip_by_id(trip,validated_data):
     for key,value in validated_data.items():
 
         setattr(trip,key,value)
+    try:
+        db.session.commit()
 
-    db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
+    
 
     return trip
 

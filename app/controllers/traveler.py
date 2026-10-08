@@ -9,23 +9,21 @@ from app.schemas.traveler_schema import TravelerCreateSchema
 from marshmallow import ValidationError
 from app.validations.traveler import is_trip_exist,is_traveler_already_exist,is_travel_seat_available,is_trip_date_range_overlap
 from app.services.traveler import register_traveler,get_traveler_trip_dates,delete_traveler_by_trip_and_traveler_id
+from werkzeug.exceptions import NotFound,BadRequest,Conflict,InternalServerError
+from sqlalchemy.exc import  SQLAlchemyError
 
 def add_traveler(id):
 
     trip = is_trip_exist(id)
 
     if trip is None:
-        return {
-            "error":"Not Found",
-            "message":"This Trip is not fount in the trip lists"
-        },404
+
+        raise NotFound("This trip is not found in the trip list")
 
     
     if trip.status != TripStatus.PLANNED:
-        return {
-            "error":"Conflict",
-            "message":f"This Trip is {trip.status.value}"
-        },409
+        raise Conflict(f"This Trip is {trip.status.value}")
+        
 
 
     data = request.get_json()
@@ -36,10 +34,7 @@ def add_traveler(id):
     
     except ValidationError as error:
 
-        return {
-            "error":"Invalid input",
-            "message":error.messages
-        },400
+        raise BadRequest(error.messages)
     
 
     name = validated_data["name"]
@@ -48,26 +43,19 @@ def add_traveler(id):
     traveler = register_traveler(name,email)
 
     if traveler.name != name:
-        return {
-            "error":"Email already registered",
-            "message":"This email is already registered with another name"
-        },409
+        raise Conflict("This email is already registered with another name")
+        
 
     traveler_id = traveler.id
     
     if is_traveler_already_exist(trip.id,traveler_id):
+        raise Conflict("You are alrady in this Trip")
 
-        return {
-            "error":"Already exist",
-            "message":"You are alrady in this Trip"
-        },409
+       
     
     if not is_travel_seat_available(trip):
-        return {
-            "error":"Trip Full",
-            "message":"This trip has reached its maximum traveler capacity"
-        },409
-
+        raise Conflict("This trip has reached its maximum traveler capacity")
+        
     trip_date = {
         "start_date":trip.start_date,
         "end_date":trip.end_date
@@ -76,20 +64,23 @@ def add_traveler(id):
     exist_dates = get_traveler_trip_dates(traveler_id,trip.id)
 
     if is_trip_date_range_overlap(trip_date,exist_dates):
-        return {
-            "error":"Date overlap",
-            "message":"This trip date range is overlaping with your other trips"
 
-        },409
+        raise Conflict("This trip date range is overlaping with your other trips")
+        
     
     travel = Travel(
         trip_id = trip.id,
         traveler_id = traveler_id
     )
+    try:
+        db.session.add(travel)
+        trip.current_travelers = trip.current_travelers + 1
+        db.session.commit()
 
-    db.session.add(travel)
-    trip.current_travelers = trip.current_travelers + 1
-    db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
+    
 
     
     return {
@@ -104,10 +95,9 @@ def delete_traveler(id,traveler_id):
 
     if travel is None:
 
-        return {
-            "error":"Not found",
-            "message":"You are not in this trip "
-        },404
+        raise NotFound("you are not in this trip list")
+
+        
 
     return {
         "success":True,

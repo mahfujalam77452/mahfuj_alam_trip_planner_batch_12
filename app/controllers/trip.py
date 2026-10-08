@@ -6,6 +6,8 @@ from app.schemas.trip_schema import TripCreateSchema,TripResponseSchema,TripUpda
 from marshmallow import ValidationError
 from app.validations.trip import is_date_range_valid,is_expense_valid,is_valid_state_change
 from app.services.trip import get_trips,get_trip_by_id,delete_trip_by_id,update_trip_by_id
+from werkzeug.exceptions import NotFound,BadRequest,Conflict,InternalServerError
+from sqlalchemy.exc import  SQLAlchemyError
 
 def create_a_trip():
 
@@ -20,24 +22,19 @@ def create_a_trip():
     
     except ValidationError as error:
 
-        return {
-            "error":"Invalid input",
-            "message":error.messages
-        },400
+        raise BadRequest(error.messages)
+        
     
     start_date = validated_data["start_date"]
     end_date = validated_data["end_date"]
 
     if not is_date_range_valid(start_date,end_date):
 
-        return {
-            "error":"Invalid date range",
-            "message":"start date should be the same date or previous date of end date"
-        },400
+        raise BadReauest("start date should be the same date or previous date of end date")
+
+        
     
    
-
-
     trip = Trip(
         destination=validated_data["destination"],
         start_date=validated_data["start_date"],
@@ -45,11 +42,18 @@ def create_a_trip():
         budget=validated_data["budget"],
         max_travelers=validated_data["max_travelers"]
     )
+
+    try:
+        db.session.add(trip)
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
     
 
 
-    db.session.add(trip)
-    db.session.commit()
+    
     
 
 
@@ -79,10 +83,8 @@ def get_trip(id):
 
     if trip is None:
 
-        return {
-            "error":"Trip not found",
-            "message":"This trip is not found"
-        },404
+        raise NotFound("This trip is not found in the trip list")
+
 
     return {
         "success":True,
@@ -98,16 +100,14 @@ def update_trip(id):
 
     if trip is None:
 
-        return {
-            "error":"Trip not found",
-            "message":"This trip is not found"
-        },404
+        raise NotFound("This trip is not found in the trip list")
+
+        
 
     if trip.status == TripStatus.COMPLETED:
-        return {
-            "error":"Conflict",
-            "message":"can't edit a copleted trip"
-        },409
+
+        raise Conflict("can't edit a completed trip")
+        
 
     
 
@@ -122,10 +122,9 @@ def update_trip(id):
     
     except ValidationError as error:
 
-        return {
-            "error":"Invalid input",
-            "message":error.messages
-        },400
+        raise BadRequest(error.message)
+
+        
     
     trip = update_trip_by_id(id,validated_data)
 
@@ -147,10 +146,7 @@ def delete_trip(id):
 
     if trip is None:
 
-        return {
-            "error":"Trip not found",
-            "message":"This trip is not found"
-        },404
+        raise NotFound("This trip is not found in the trip list")
 
     return {
         "success":True,
@@ -164,16 +160,11 @@ def add_expense(id):
     
     if trip is None:
 
-        return {
-            "error":"Trip not found",
-            "message":"This trip is not found"
-        },404
+        raise NotFound("This trip is not found in the trip list")
 
     if trip.status != TripStatus.PLANNED or trip.status != TripStatus.ONGOING:
-        return {
-            "error":"Conflict",
-            "message":f"adding expense is not allowed for {trip.status.value.lower()} trip"
-        },409
+        raise Conflict(f"adding expense is not allowed for {trip.status.value.lower()} trip")
+        
 
     data = request.get_json()
 
@@ -184,17 +175,13 @@ def add_expense(id):
         validated_data = schema.load(data)
     
     except ValidationError as error:
+        raise BadRequest(error.messages)
 
-        return {
-            "error":"Invalid input",
-            "message":error.messages
-        },400
+        
 
     if not is_expense_valid(trip.budget,trip.expenses + validated_data["amount"]):
-        return {
-            "error":"Budget exceeding",
-            "message":"Your expense is exceeding the total budget"
-        },409
+        raise Conflict("Your expense is exceeding the total budget")
+        
 
     expense = Expense(
         trip_id = id,
@@ -202,9 +189,16 @@ def add_expense(id):
         amount = validated_data["amount"]
     )
 
-    db.session.add(expense)
-    trip.expenses = trip.expenses + validated_data["amount"]
-    db.session.commit()
+    try:
+        db.session.add(expense)
+        trip.expenses = trip.expenses + validated_data["amount"]
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
+
+    
 
 
     return {
@@ -224,10 +218,7 @@ def get_summary(id):
     
     if trip is None:
 
-        return {
-            "error":"Trip not found",
-            "message":"This trip is not found"
-        },404
+        raise NotFound("This trip is not found in the trip list")
 
     return {
         "destination":trip.destination,
@@ -250,10 +241,7 @@ def change_status(id):
     
     if trip is None:
 
-        return {
-            "error":"Trip not found",
-            "message":"This trip is not found"
-        },404
+        raise NotFound("This trip is not found in the trip list")
 
     data = request.get_json()
 
@@ -265,22 +253,23 @@ def change_status(id):
     
     except ValidationError as error:
 
-        return {
-            "error":"Invalid input",
-            "message":error.messages
-        },400
+        raise BadRequest(error.messages)
 
     proposed_status = TripStatus(validated_data["status"])
 
     if not is_valid_state_change(trip.status,proposed_status):
 
-        return {
-            "error":"Invalid Status",
-            "message":f"Status can't be changed form {trip.status.value} to {proposed_status.value}"
-        },409
+        raise Conflict(f"Status can't be changed form {trip.status.value} to {proposed_status.value}")
 
-    trip.status = proposed_status
-    db.session.commit()
+    try:
+        trip.status = proposed_status
+        db.session.commit()
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise InternalServerError("Database error occurred.")
+
+    
 
     return {
         "success":True,
